@@ -14,7 +14,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public final class Util {
-    //TODO 02.04.2024 - 10:04: реализуйте настройку соеденения с БД
+    private Util() {
+    }
 
     private static final String URL_KEY = "db.url";
     private static final String USERNAME_KEY = "db.username";
@@ -22,24 +23,18 @@ public final class Util {
 
     private static final Properties PROPERTIES = new Properties();
 
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     static {
         try (InputStream inputStream = Util.class.getClassLoader().getResourceAsStream("application.properties")) {
             PROPERTIES.load(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
 
     public static Connection connectionOpen() {
+        Connection connection = null;
         try {
             return DriverManager.getConnection(
                     PROPERTIES.getProperty(URL_KEY),
@@ -47,11 +42,13 @@ public final class Util {
                     PROPERTIES.getProperty(PASSWORD_KEY)
             );
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return connection;
     }
 
     public static Session connectionOpenHibernate() {
+        Session session = null;
         try {
             SessionFactory sessionFactory = new Configuration()
                 .setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
@@ -61,10 +58,10 @@ public final class Util {
                 .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect")
                 .addAnnotatedClass(User.class)
                 .buildSessionFactory();
-            Session session = sessionFactory.openSession();
-            return session;
+            return sessionFactory.openSession();
         } catch (HibernateException e) {
-            throw new RuntimeException();
+            e.printStackTrace();
         }
+        return session;
     }
 }
